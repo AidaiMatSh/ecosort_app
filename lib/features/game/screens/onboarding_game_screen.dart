@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'game_screen.dart';
 
+<<<<<<<< HEAD:lib/features/game/screens/onboarding_game_screen.dart
 class GameTutorialScreen extends StatefulWidget {
   const GameTutorialScreen({super.key});
 
@@ -9,6 +10,16 @@ class GameTutorialScreen extends StatefulWidget {
 }
 
 class _GameTutorialScreenState extends State<GameTutorialScreen> {
+========
+class GameOnboardingScreen extends StatefulWidget {
+  const GameOnboardingScreen({super.key});
+
+  @override
+  State<GameOnboardingScreen> createState() => _GameOnboardingScreenState();
+}
+
+class _GameOnboardingScreenState extends State<GameOnboardingScreen> {
+>>>>>>>> 317724931962b40815d94680bdf16abe98fb6d88:lib/features/game/screens/game_onboarding_screen.dart
   int step = 0;
 
   final List<String> texts = [
