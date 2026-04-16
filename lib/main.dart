@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// screens
+import 'features/onboarding/onboarding_screen.dart';
+import 'features/game/screens/onboarding_game_screen.dart';
 import 'features/map/map_screen.dart';
-import 'features/game/screens/onboarding_screen.dart';
 import 'features/chat/chat_screen.dart';
 import 'features/stats/stats_screen.dart';
 import 'features/profile/profile_screen.dart';
 
-void main() {
-  runApp(const EcoSortApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final prefs = await SharedPreferences.getInstance();
+  final bool accepted = prefs.getBool("accepted") ?? false;
+
+  runApp(EcoSortApp(startAccepted: accepted));
 }
 
 class EcoSortApp extends StatelessWidget {
-  const EcoSortApp({super.key});
+  final bool startAccepted;
+
+  const EcoSortApp({super.key, required this.startAccepted});
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +28,11 @@ class EcoSortApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'EcoSort App',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const MainScreen(),
+      // Если условия приняты — входим, иначе — экран соглашения
+      home: startAccepted ? const MainScreen() : const OnboardingScreen(),
     );
   }
 }
@@ -38,12 +47,13 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _index = 0;
 
-  final List<Widget> pages = const [
-    MapScreen(),
-    OnboardingScreen(), // 👈 ВОТ ТУТ ВАЖНО
-    ChatScreen(),
-    StatsScreen(),
-    ProfileScreen(),
+  // Список страниц для BottomNavigationBar
+  final List<Widget> pages = [
+    const Center(child: Text("Map Screen")), // Заглушка (замените на MapScreen())
+    const GameTutorialScreen(),             // Здесь теперь обучение игре
+    const Center(child: Text("Chat Screen")),
+    const Center(child: Text("Stats Screen")),
+    const Center(child: Text("Profile Screen")),
   ];
 
   @override
