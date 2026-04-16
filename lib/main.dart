@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 // screens
 import 'features/map/map_screen.dart';
-import 'features/game/screens/onboarding_screen.dart';
+import 'features/game/screens/game_onboarding_screen.dart';
 import 'features/chat/chat_screen.dart';
 import 'features/stats/stats_screen.dart';
 import 'features/profile/profile_screen.dart';
@@ -40,7 +40,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> pages = const [
     MapScreen(),
-    OnboardingScreen(), // 👈 ВОТ ТУТ ВАЖНО
+    GameOnboardingScreen(), // 👈 ВОТ ТУТ ВАЖНО
     ChatScreen(),
     StatsScreen(),
     ProfileScreen(),

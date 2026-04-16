@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'game_screen.dart';
 
-class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+class GameOnboardingScreen extends StatefulWidget {
+  const GameOnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  State<GameOnboardingScreen> createState() => _GameOnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _GameOnboardingScreenState extends State<GameOnboardingScreen> {
   int step = 0;
 
   final List<String> texts = [
