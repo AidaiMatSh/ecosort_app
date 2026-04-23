@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/game/screens/onboarding_game_screen.dart';
+import 'features/stats/stats_screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,7 +57,7 @@ class _MainScreenState extends State<MainScreen> {
           // ✅ Передаём isActiveTab — чтобы GameTutorialScreen знал, активна ли она
           GameTutorialScreen(isActiveTab: _index == 1),
           const Center(child: Text("Chat Screen")),
-          const Center(child: Text("Stats Screen")),
+          StatisticsScreen(),
           const Center(child: Text("Profile Screen")),
         ],
       ),
