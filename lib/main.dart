@@ -1,12 +1,10 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/game/screens/onboarding_game_screen.dart';
 import 'features/stats/stats_screen.dart';
-
+import 'features/profile/profile_screen.dart'; // 👈 ДОБАВИЛИ
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,7 +43,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _index = 0;
-  int _previousIndex = 0; // Запоминаем предыдущую вкладку
 
   @override
   Widget build(BuildContext context) {
@@ -54,18 +51,17 @@ class _MainScreenState extends State<MainScreen> {
         index: _index,
         children: [
           const Center(child: Text("Map Screen")),
-          // ✅ Передаём isActiveTab — чтобы GameTutorialScreen знал, активна ли она
           GameTutorialScreen(isActiveTab: _index == 1),
           const Center(child: Text("Chat Screen")),
-          StatisticsScreen(),
-          const Center(child: Text("Profile Screen")),
+          const StatisticsScreen(),
+          const ProfileScreen(), // 👈 ВОТ ТУТ ПРОФИЛЬ
         ],
       ),
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         onTap: (value) {
           setState(() {
-            _previousIndex = _index;
             _index = value;
           });
         },

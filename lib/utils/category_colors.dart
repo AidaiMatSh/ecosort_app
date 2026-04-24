@@ -6,5 +6,7 @@ class CategoryColors {
     "Стекло": Colors.green,
     "Бумага": Colors.orange,
     "Металл": Colors.grey,
+    "Органика": Colors.brown,
+    "Смешанные отходы": Colors.red,
   };
 }
