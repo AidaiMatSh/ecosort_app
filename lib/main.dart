@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/game/screens/onboarding_game_screen.dart';
-
+import 'features/profile/screens/profile_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -56,7 +56,7 @@ class _MainScreenState extends State<MainScreen> {
           GameTutorialScreen(isActiveTab: _index == 1),
           const Center(child: Text("Chat Screen")),
           const Center(child: Text("Stats Screen")),
-          const Center(child: Text("Profile Screen")),
+          const ProfileScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
