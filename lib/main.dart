@@ -1,17 +1,18 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Импортируем ваши экраны (проверьте правильность путей!)
 import 'features/onboarding/onboarding_screen.dart';
-import 'features/game/screens/onboarding_game_screen.dart';
-import 'features/profile/screens/profile_screen.dart';
+import 'features/main/main_screen.dart'; // Путь к вашему файлу main_screen.dart
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final prefs = await SharedPreferences.getInstance();
-  final bool accepted = prefs.getBool("accepted") ?? false;
 
+  // Раскомментируйте строку ниже ОДИН РАЗ и запустите приложение
+  // await prefs.clear();
+
+  final bool accepted = prefs.getBool("accepted") ?? false;
   runApp(EcoSortApp(startAccepted: accepted));
 }
 
@@ -29,55 +30,8 @@ class EcoSortApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
+      // Если условия приняты — идем в MainScreen, иначе в Onboarding
       home: startAccepted ? const MainScreen() : const OnboardingScreen(),
-    );
-  }
-}
-
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int _index = 0;
-  int _previousIndex = 0; // Запоминаем предыдущую вкладку
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _index,
-        children: [
-          const Center(child: Text("Map Screen")),
-          // ✅ Передаём isActiveTab — чтобы GameTutorialScreen знал, активна ли она
-          GameTutorialScreen(isActiveTab: _index == 1),
-          const Center(child: Text("Chat Screen")),
-          const Center(child: Text("Stats Screen")),
-          const ProfileScreen(),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _index,
-        onTap: (value) {
-          setState(() {
-            _previousIndex = _index;
-            _index = value;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: "Map"),
-          BottomNavigationBarItem(icon: Icon(Icons.gamepad), label: "Game"),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Chat"),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Stats"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
-      ),
     );
   }
 }
