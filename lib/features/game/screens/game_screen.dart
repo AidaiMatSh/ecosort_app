@@ -11,7 +11,7 @@ import '../widgets/bin_widget.dart';
 class GameScreen extends StatefulWidget {
   final bool isPaused;
   final void Function(int level)? onLevelChanged;
-  final int initialLevel; // ✅ с какого уровня начинать
+  final int initialLevel;
 
   const GameScreen({
     super.key,
@@ -33,7 +33,7 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     logic = GameLogic();
-    logic.level = widget.initialLevel; // ✅ стартуем с нужного уровня
+    logic.level = widget.initialLevel;
     logic.startLevel();
     _startTimer();
   }
@@ -41,15 +41,10 @@ class _GameScreenState extends State<GameScreen> {
   @override
   void didUpdateWidget(covariant GameScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    // ✅ Реагируем на изменение паузы
     if (widget.isPaused && !oldWidget.isPaused) {
-      // Поставить на паузу — останавливаем таймер
       timer?.cancel();
     }
-
     if (!widget.isPaused && oldWidget.isPaused) {
-      // Снять с паузы — возобновляем таймер
       _startTimer();
     }
   }
@@ -57,12 +52,9 @@ class _GameScreenState extends State<GameScreen> {
   void _startTimer() {
     timer?.cancel();
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      // ✅ Не тикаем если на паузе
       if (widget.isPaused) return;
-
       setState(() {
         logic.tick();
-
         if (logic.isGameOver) {
           timer?.cancel();
           _showEndDialog(false);
@@ -72,10 +64,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _onCorrect() {
-    setState(() {
-      logic.score++;
-    });
-
+    setState(() => logic.score++);
     if (logic.isWin) {
       timer?.cancel();
       _showEndDialog(true);
@@ -83,10 +72,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _onWrong() {
-    setState(() {
-      logic.lives--;
-    });
-
+    setState(() => logic.lives--);
     if (logic.isGameOver) {
       timer?.cancel();
       _showEndDialog(false);
@@ -95,64 +81,54 @@ class _GameScreenState extends State<GameScreen> {
 
   void _showEndDialog(bool result) {
     gameEnded = true;
-
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          result ? "🎉 Уровень пройден!" : "💀 Уровень провален",
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          result ? "Отличная работа! Переходим дальше." : "Не расстраивайся, попробуй ещё раз!",
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actions: [
+          TextButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                gameEnded = false;
+                logic.resetLevel();
+                _startTimer();
+                widget.onLevelChanged?.call(logic.level);
+              });
+            },
+            icon: const Icon(Icons.refresh),
+            label: const Text("Повторить"),
           ),
-          title: Text(
-            result ? "🎉 Уровень пройден!" : "💀 Уровень провален",
-            textAlign: TextAlign.center,
-          ),
-          content: Text(
-            result
-                ? "Отличная работа! Переходим дальше."
-                : "Не расстраивайся, попробуй ещё раз!",
-            textAlign: TextAlign.center,
-          ),
-          actionsAlignment: MainAxisAlignment.spaceEvenly,
-          actions: [
-            // Всегда можно повторить
-            TextButton.icon(
+          if (result)
+            ElevatedButton.icon(
               onPressed: () {
                 Navigator.pop(context);
                 setState(() {
                   gameEnded = false;
-                  logic.resetLevel();
+                  logic.nextLevel();
                   _startTimer();
                   widget.onLevelChanged?.call(logic.level);
                 });
               },
-              icon: const Icon(Icons.refresh),
-              label: const Text("Повторить"),
-            ),
-
-            // Кнопка "Далее" только при победе
-            if (result)
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  setState(() {
-                    gameEnded = false;
-                    logic.nextLevel();
-                    _startTimer();
-                    widget.onLevelChanged?.call(logic.level);
-                  });
-                },
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text("Далее"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                ),
+              icon: const Icon(Icons.arrow_forward),
+              label: const Text("Далее"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
               ),
-          ],
-        );
-      },
+            ),
+        ],
+      ),
     );
   }
 
@@ -165,14 +141,14 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     final item = logic.currentItem;
-    final level = logic.level;
     final hasTimer = logic.currentLevel.hasTimer;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Column(
       children: [
-        // ✅ Панель статуса
+        // ✅ Статус бар
         Container(
-          margin: const EdgeInsets.all(12),
+          margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             color: Colors.green.shade50,
@@ -182,39 +158,21 @@ class _GameScreenState extends State<GameScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "⭐ ${logic.score}",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                "Уровень $level",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
+              Text("⭐ ${logic.score}",
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text("Уровень ${logic.level}",
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green)),
               Row(
                 children: [
-                  Text(
-                    "❤️ ${logic.lives}",
-                    style: const TextStyle(fontSize: 16),
-                  ),
+                  Text("❤️ ${logic.lives}", style: const TextStyle(fontSize: 16)),
                   if (hasTimer) ...[
                     const SizedBox(width: 12),
                     Text(
                       "⏱ ${logic.timeLeft}s",
                       style: TextStyle(
                         fontSize: 16,
-                        color: logic.timeLeft <= 5
-                            ? Colors.red
-                            : Colors.black87,
-                        fontWeight: logic.timeLeft <= 5
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                        color: logic.timeLeft <= 5 ? Colors.red : Colors.black87,
+                        fontWeight: logic.timeLeft <= 5 ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                   ],
@@ -224,57 +182,67 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ),
 
-        // ✅ Текущий предмет для сортировки
-        const SizedBox(height: 20),
-        const Text(
-          "Перетащи мусор в нужный бак:",
-          style: TextStyle(fontSize: 14, color: Colors.grey),
-        ),
-        const SizedBox(height: 12),
-        DraggableItem(item: item),
-
-        const Spacer(),
-
-        // ✅ Баки — 2 ряда по 3
-        Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: bins.take(3).map((bin) {
-                return BinWidget(
-                  bin: bin,
-                  onAccept: (data) {
-                    if (data == bin.type) {
-                      _onCorrect();
-                    } else {
-                      _onWrong();
-                    }
-                    setState(() => logic.nextItem());
-                  },
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: bins.skip(3).take(3).map((bin) {
-                return BinWidget(
-                  bin: bin,
-                  onAccept: (data) {
-                    if (data == bin.type) {
-                      _onCorrect();
-                    } else {
-                      _onWrong();
-                    }
-                    setState(() => logic.nextItem());
-                  },
-                );
-              }).toList(),
-            ),
-          ],
+        // ✅ Предмет мусора — занимает ~35% экрана
+        SizedBox(
+          height: screenHeight * 0.32,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                "Перетащи мусор в нужный бак:",
+                style: TextStyle(fontSize: 13, color: Colors.grey),
+              ),
+              const SizedBox(height: 12),
+              DraggableItem(item: item),
+            ],
+          ),
         ),
 
-        const SizedBox(height: 24),
+        // ✅ Баки — занимают оставшееся пространство, крупные
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Первый ряд — 3 бака
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: bins.take(3).map((bin) => Expanded(
+                    child: BinWidget(
+                      bin: bin,
+                      onAccept: (data) {
+                        if (data == bin.type) {
+                          _onCorrect();
+                        } else {
+                          _onWrong();
+                        }
+                        setState(() => logic.nextItem());
+                      },
+                    ),
+                  )).toList(),
+                ),
+                // Второй ряд — 3 бака
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: bins.skip(3).take(3).map((bin) => Expanded(
+                    child: BinWidget(
+                      bin: bin,
+                      onAccept: (data) {
+                        if (data == bin.type) {
+                          _onCorrect();
+                        } else {
+                          _onWrong();
+                        }
+                        setState(() => logic.nextItem());
+                      },
+                    ),
+                  )).toList(),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }

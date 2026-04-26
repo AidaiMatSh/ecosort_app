@@ -1,34 +1,42 @@
+// lib/features/game/data/waste_data.dart
+
 import '../models/waste_item.dart';
 
-final List<WasteItem> levelWaste = [
+final List<WasteItem> wasteItems = [
   WasteItem(
-    name: "Бутылка",
-    type: "plastic",
-    image: "assets/bottle.png",
+    name: 'Газета',
+    type: 'paper',
+    image: 'newspaper',
+    imagePath: 'assets/images/waste/newspaper.png',
   ),
   WasteItem(
-    name: "Яблоко",
-    type: "organic",
-    image: "assets/apple.png",
+    name: 'Яблочный огрызок',
+    type: 'organic',
+    image: 'apple',
+    imagePath: 'assets/images/waste/apple.png',
   ),
   WasteItem(
-    name: "Стеклянная банка",
-    type: "glass",
-    image: "assets/glass.png",
+    name: 'Жестяная банка',
+    type: 'metal',
+    image: 'tin_can',
+    imagePath: 'assets/images/waste/tin_can.png',
   ),
   WasteItem(
-    name: "Газета",
-    type: "paper",
-    image: "assets/newspaper.png",
+    name: 'Пластиковая бутылка',
+    type: 'plastic',
+    image: 'bottle',
+    imagePath: 'assets/images/waste/bottle.png',
   ),
   WasteItem(
-    name: "Банановая кожура",
-    type: "organic",
-    image: "assets/banana.png",
+    name: 'Стеклянная банка',
+    type: 'glass',
+    image: 'glass_jar',
+    imagePath: 'assets/images/waste/glass_jar.png',
   ),
   WasteItem(
-    name: "Жестяная банка",
-    type: "metal",
-    image: "assets/can.png",
+    name: 'Кожура банана',
+    type: 'organic',
+    image: 'banana_peel',
+    imagePath: 'assets/images/waste/banana_peel.png',
   ),
 ];

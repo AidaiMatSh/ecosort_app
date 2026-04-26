@@ -1,13 +1,12 @@
 // lib/features/game/screens/onboarding_game_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'game_screen.dart';
 import '../game_session.dart';
 
 class GameTutorialScreen extends StatefulWidget {
-  // ✅ isActiveTab — родитель (MainScreen) сообщает, открыта ли сейчас эта вкладка
   final bool isActiveTab;
-
   const GameTutorialScreen({super.key, required this.isActiveTab});
 
   @override
@@ -18,7 +17,9 @@ class _GameTutorialScreenState extends State<GameTutorialScreen> {
   int step = 0;
   bool showResumeMenu = false;
   bool gameStarted = false;
-  int gameKey = 0; // ✅ при смене key Flutter полностью пересоздаёт GameScreen
+  int gameKey = 0;
+  bool tutorialSeenBefore = false; // ✅ читал ли раньше
+  bool _loaded = false;
 
   final List<String> texts = [
     "♻️ Эта игра — мини-симуляция реального процесса переработки мусора.",
@@ -34,23 +35,34 @@ class _GameTutorialScreenState extends State<GameTutorialScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _checkIfTutorialSeen();
+  }
+
+  Future<void> _checkIfTutorialSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getBool('game_tutorial_seen') ?? false;
+    setState(() {
+      tutorialSeenBefore = seen;
+      _loaded = true;
+    });
+  }
+
+  Future<void> _markTutorialSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('game_tutorial_seen', true);
+  }
+
+  @override
   void didUpdateWidget(covariant GameTutorialScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    // ✅ КЛЮЧЕВАЯ ЛОГИКА: отслеживаем смену вкладки через пропс
     if (!widget.isActiveTab && oldWidget.isActiveTab) {
-      // Пользователь УШЁЛ с игровой вкладки
-      if (gameStarted) {
-        GameSession.isPaused = true;
-      }
+      if (gameStarted) GameSession.isPaused = true;
     }
-
     if (widget.isActiveTab && !oldWidget.isActiveTab) {
-      // Пользователь ВЕРНУЛСЯ на игровую вкладку
       if (gameStarted && GameSession.isPaused) {
-        setState(() {
-          showResumeMenu = true;
-        });
+        setState(() => showResumeMenu = true);
       }
     }
   }
@@ -59,21 +71,24 @@ class _GameTutorialScreenState extends State<GameTutorialScreen> {
     if (step < texts.length - 1) {
       setState(() => step++);
     } else {
-      // Закончили обучение — запускаем игру
-      setState(() {
-        gameStarted = true;
-        GameSession.hasActiveGame = true;
-        GameSession.isPaused = false;
-        GameSession.level = 1;
-      });
+      _startGame();
     }
+  }
+
+  void _startGame() {
+    _markTutorialSeen();
+    setState(() {
+      gameStarted = true;
+      GameSession.hasActiveGame = true;
+      GameSession.isPaused = false;
+      GameSession.level = 1;
+    });
   }
 
   void startNewGame() {
     setState(() {
       showResumeMenu = false;
       gameKey++;
-      // ✅ НЕ сбрасываем level — остаёмся на том же уровне
       GameSession.isPaused = false;
     });
   }
@@ -87,96 +102,25 @@ class _GameTutorialScreenState extends State<GameTutorialScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_loaded) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
-      // ✅ AppBar без кнопки "назад" — игра живёт внутри BottomNavBar
       appBar: AppBar(
         title: const Text("Игра ♻️"),
         automaticallyImplyLeading: false,
       ),
-
       body: gameStarted
           ? Stack(
               children: [
-                // ✅ Передаём isPaused в GameScreen — он сам останавливает таймер
                 GameScreen(
                   key: ValueKey(gameKey),
                   isPaused: GameSession.isPaused,
-                  initialLevel: GameSession.level, // ✅ передаём текущий уровень
-                  onLevelChanged: (level) {
-                    GameSession.level = level;
-                  },
+                  initialLevel: GameSession.level,
+                  onLevelChanged: (level) => GameSession.level = level,
                 ),
-
-                // ✅ Меню паузы поверх игры
-                if (showResumeMenu)
-                  Container(
-                    color: Colors.black.withOpacity(0.7),
-                    child: Center(
-                      child: Card(
-                        margin: const EdgeInsets.all(32),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                "⏸️ Игра на паузе",
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Уровень ${GameSession.level}",
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: continueGame,
-                                  icon: const Icon(Icons.play_arrow),
-                                  label: const Text("Продолжить"),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton.icon(
-                                  onPressed: startNewGame,
-                                  icon: const Icon(Icons.refresh),
-                                  label: const Text("Начать заново"),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                if (showResumeMenu) _buildPauseMenu(),
               ],
             )
           : _buildTutorial(),
@@ -185,10 +129,28 @@ class _GameTutorialScreenState extends State<GameTutorialScreen> {
 
   Widget _buildTutorial() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // ✅ "Пропустить" — только если уже читал раньше
+          if (tutorialSeenBefore)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _startGame,
+                child: const Text(
+                  "Пропустить →",
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            )
+          else
+            const SizedBox(height: 8),
+
           // Индикатор шага
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -243,6 +205,61 @@ class _GameTutorialScreenState extends State<GameTutorialScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPauseMenu() {
+    return Container(
+      color: Colors.black.withOpacity(0.7),
+      child: Center(
+        child: Card(
+          margin: const EdgeInsets.all(32),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text("⏸️ Игра на паузе",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text("Уровень ${GameSession.level}",
+                    style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: continueGame,
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text("Продолжить"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: startNewGame,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text("Начать заново"),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
