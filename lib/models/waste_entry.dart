@@ -1,4 +1,4 @@
-class WasteEntry {
+﻿class WasteEntry {
   final String category;
   final double amount;
   final DateTime date;
