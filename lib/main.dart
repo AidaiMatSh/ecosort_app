@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'map/map_screen.dart';
+
 
 // screens
 import 'features/map/map_screen.dart';
@@ -7,6 +7,7 @@ import 'features/game/game_screen.dart';
 import 'features/chat/chat_screen.dart';
 import 'features/stats/stats_screen.dart';
 import 'features/profile/profile_screen.dart';
+import 'features/map/map_screen.dart';
 
 void main() {
   runApp(const EcoSortApp());

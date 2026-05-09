@@ -1,20 +1,20 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../models/recycle_point.dart';
+import 'package:latlong2/latlong.dart';
+import 'recycle_point.dart';
 
 final List<RecyclePoint> mockPoints = [
   RecyclePoint(
-    name: "Макулатура",
+    name: "Paper Point",
     type: "paper",
     location: LatLng(42.8746, 74.5698),
   ),
   RecyclePoint(
-    name: "Пластик",
+    name: "Plastic Point",
     type: "plastic",
-    location: LatLng(42.8700, 74.5800),
+    location: LatLng(42.8846, 74.5798),
   ),
   RecyclePoint(
-    name: "Стекло",
+    name: "Glass Point",
     type: "glass",
-    location: LatLng(42.8800, 74.5600),
+    location: LatLng(42.8646, 74.5598),
   ),
 ];
