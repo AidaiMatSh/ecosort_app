@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// screens
-import 'features/map/map_screen.dart';
-import 'features/game/game_screen.dart';
-import 'features/chat/chat_screen.dart';
-import 'features/stats/stats_screen.dart';
-import 'features/profile/profile_screen.dart';
+// Импортируем ваши экраны (проверьте правильность путей!)
+import 'features/onboarding/onboarding_screen.dart';
+import 'features/main/main_screen.dart'; // Путь к вашему файлу main_screen.dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() {
-  runApp(const EcoSortApp());
+  final prefs = await SharedPreferences.getInstance();
+
+  // Раскомментируйте строку ниже ОДИН РАЗ и запустите приложение
+  // await prefs.clear();
+
+  final bool accepted = prefs.getBool("accepted") ?? false;
+  runApp(EcoSortApp(startAccepted: accepted));
 }
 
 class EcoSortApp extends StatelessWidget {
-  const EcoSortApp({super.key});
+  final bool startAccepted;
+
+  const EcoSortApp({super.key, required this.startAccepted});
 
   @override
   Widget build(BuildContext context) {
@@ -20,73 +27,11 @@ class EcoSortApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'EcoSort App',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const MainScreen(),
-    );
-  }
-}
-
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int _index = 0;
-
-  final List<Widget> pages = const [
-    MapScreen(),
-    GameScreen(),
-    ChatScreen(),
-    StatsScreen(),
-    ProfileScreen(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _index,
-        children: pages,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _index,
-        onTap: (value) {
-          setState(() {
-            _index = value;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: "Map",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.gamepad),
-            label: "Game",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: "Chat",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: "Stats",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
-          ),
-        ],
-      ),
+      // Если условия приняты — идем в MainScreen, иначе в Onboarding
+      home: startAccepted ? const MainScreen() : const OnboardingScreen(),
     );
   }
 }
